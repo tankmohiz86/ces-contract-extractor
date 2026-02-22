@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="cesApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CES · CMR Contract Extractor</title>
+
+  <!-- AngularJS 1.8 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="logo-mark"><span>CES</span></div>
+      <div>
+        <div class="header-title">CMR CONTRACT EXTRACTOR</div>
+        <div class="header-sub">GE Aerospace Engine Services · Powered by AWS Bedrock</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span>BEDROCK ONLINE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App -->
+  <div class="main-grid" ng-controller="AppController as vm">
+
+    <!-- ── Left Panel: Upload ── -->
+    <div class="left-panel">
+
+      <!-- Upload Zone -->
+      <div>
+        <div class="panel-label">01 — UPLOAD CONTRACT PDF</div>
+
+        <div class="drop-zone"
+             ng-class="{'has-file': vm.selectedFile, 'drag-over': vm.isDragging}"
+             ng-click="vm.triggerFileInput()"
+             ce-drop-zone
+             on-file-drop="vm.onFileDrop(file)">
+
+          <div ng-if="!vm.selectedFile">
+            <div class="drop-icon">📄</div>
+            <div class="drop-title">Drop PDF here</div>
+            <div class="drop-sub">or click to browse</div>
+            <div class="drop-hint">CMR / Component Maintenance Report</div>
+          </div>
+
+          <div ng-if="vm.selectedFile" class="file-selected-info">
+            <div class="file-icon">✅</div>
+            <div class="file-name">{{ vm.selectedFile.name }}</div>
+            <div class="file-size">{{ vm.formatFileSize(vm.selectedFile.size) }}</div>
+            <button class="btn-clear" ng-click="vm.clearFile($event)">✕ Clear</button>
+          </div>
+        </div>
+
+        <input type="file"
+               id="fileInput"
+               accept="application/pdf"
+               style="display:none"
+               onchange="angular.element(this).scope().vm.onFileSelected(this)">
+      </div>
+
+      <!-- Extract Button -->
+      <button class="btn-extract"
+              ng-click="vm.extract()"
+              ng-disabled="!vm.selectedFile || vm.loading">
+        <span ng-if="!vm.loading">
+          <span class="btn-icon">⚡</span> EXTRACT CONTRACT DATA
+        </span>
+        <span ng-if="vm.loading" class="btn-loading">
+          <span class="spinner"></span> PROCESSING...
+        </span>
+      </button>
+
+      <!-- Progress stages -->
+      <div class="progress-stages" ng-if="vm.loading">
+        <div class="stage" ng-class="{'active': vm.stage >= 1, 'done': vm.stage > 1}">
+          <span class="stage-num">01</span> Extracting PDF text
+        </div>
+        <div class="stage" ng-class="{'active': vm.stage >= 2, 'done': vm.stage > 2}">
+          <span class="stage-num">02</span> Invoking AWS Bedrock (Titan Lite)
+        </div>
+        <div class="stage" ng-class="{'active': vm.stage >= 3, 'done': vm.stage > 3}">
+          <span class="stage-num">03</span> Parsing LLM response
+        </div>
+        <div class="stage" ng-class="{'active': vm.stage >= 4, 'done': vm.stage > 4}">
+          <span class="stage-num">04</span> Saving to PostgreSQL
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" ng-if="vm.error">
+        <span class="error-icon">⚠</span>
+        <span>{{ vm.error }}</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-panel" ng-if="vm.contracts.length > 0">
+        <div class="panel-label">EXTRACTION HISTORY</div>
+        <div class="stat-row">
+          <span class="stat-label">Total Contracts</span>
+          <span class="stat-value">{{ vm.contracts.length }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Latest</span>
+          <span class="stat-value mono">{{ vm.contracts[0].contractNumber || 'N/A' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right Panel: Results ── -->
+    <div class="right-panel">
+
+      <!-- Empty state -->
+      <div class="empty-state" ng-if="vm.contracts.length === 0 && !vm.loading">
+        <div class="empty-icon">🛩</div>
+        <div class="empty-title">No contracts extracted yet</div>
+        <div class="empty-sub">Upload a CMR PDF on the left to begin extraction</div>
+      </div>
+
+      <!-- Results -->
+      <div ng-if="vm.contracts.length > 0">
+        <div class="panel-label" style="padding: 28px 32px 0;">EXTRACTED CONTRACT RECORDS</div>
+
+        <!-- Contract Cards -->
+        <div class="contracts-list" style="padding: 16px 32px 32px;">
+          <div class="contract-card" ng-repeat="c in vm.contracts track by c.id">
+
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="contract-num">{{ c.contractNumber || 'CONTRACT #' + c.id }}</div>
+                <div class="contract-meta">
+                  <span class="meta-chip">{{ c.aircraftType || '—' }}</span>
+                  <span class="meta-chip engine">{{ c.engineModel || '—' }}</span>
+                </div>
+              </div>
+              <div class="card-header-right">
+                <span class="status-badge" ng-class="c.extractionStatus === 'SUCCESS' ? 'ok' : 'err'">
+                  {{ c.extractionStatus }}
+                </span>
+                <button class="btn-delete" ng-click="vm.deleteContract(c.id)" title="Delete">✕</button>
+              </div>
+            </div>
+
+            <div class="card-grid">
+              <div class="field-item">
+                <div class="field-label">Work Order</div>
+                <div class="field-value mono">{{ c.workOrderNumber || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Airline Operator</div>
+                <div class="field-value">{{ c.airlineOperator || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Engine S/N</div>
+                <div class="field-value mono">{{ c.engineSerialNumber || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Shop Visit Date</div>
+                <div class="field-value">{{ c.shopVisitDate || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Station Location</div>
+                <div class="field-value">{{ c.stationLocation || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Total Cost</div>
+                <div class="field-value cost">{{ c.totalCost ? (c.currency || 'USD') + ' ' + c.totalCost : '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Return to Service</div>
+                <div class="field-value">{{ c.returnToServiceDate || '—' }}</div>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Authorized Signatory</div>
+                <div class="field-value">{{ c.authorizedSignatory || '—' }}</div>
+              </div>
+              <div class="field-item full-width">
+                <div class="field-label">Work Scope</div>
+                <div class="field-value">{{ c.workScope || '—' }}</div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span class="footer-file">📄 {{ c.originalFilename }}</span>
+              <span class="footer-time">{{ c.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app/app.module.js"></script>
+  <script src="app/services/contract.service.js"></script>
+  <script src="app/components/app.controller.js"></script>
+  <script src="app/directives/dropzone.directive.js"></script>
+
+</body>
+</html>

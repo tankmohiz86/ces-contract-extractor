@@ -1,0 +1,53 @@
+GE AEROSPACE ENGINE SERVICES (CES)
+COMPONENT MAINTENANCE REPORT - CONTRACT AGREEMENT
+Document Ref: GEA-CES-CMR-2024-0042
+
+CONTRACT NUMBER: CMR-2024-GEA-CES-0042
+WORK ORDER NUMBER: WO-GEA-2024-108754
+CONTRACT DATE: March 15, 2024
+
+SERVICE PROVIDER:
+GE Aerospace Engine Services (CES)
+One Neumann Way, Cincinnati, OH 45215, USA
+Station Location: GE CES MRO - Cincinnati, Ohio (CVG)
+
+CUSTOMER / AIRLINE OPERATOR:
+American Airlines, Inc.
+1 Skyview Drive, Fort Worth, TX 76155
+Customer Name: American Airlines Inc.
+Authorized Representative: James T. Wilson, Director of Engineering
+
+AIRCRAFT AND ENGINE DETAILS:
+Aircraft Type: Boeing 737-800
+Aircraft Registration: N951AA
+Engine Model: CFM56-7B27
+Engine Serial Number: 896-427
+Engine Position: #1 (Left Wing)
+Total Time Since New: 28,450 FH / 19,820 FC
+Shop Visit Date: March 20, 2024
+
+SCOPE OF WORK:
+Performance Restoration Shop Visit (PRSV)
+- HPC Blade Replacement: Replace Stage 3-9 HPC blades (ATA 72-30)
+- HPT Nozzle Repair: Braze repair on Stage 1 HPT nozzle segments (ATA 72-60)
+- Combustor Inspection: Borescope + dimensional check, liner replacement (ATA 72-40)
+- LPT Rotor Overhaul: Full teardown, disk inspection, blade re-coat (ATA 72-50)
+- FADEC Software Update: Update to version 5.2.7 (ATA 73-20)
+
+FINANCIAL SUMMARY:
+Labor Charges: $1,245,000.00 USD
+Parts and Materials: $3,892,500.00 USD
+TAT Penalty Waiver: ($45,000.00) USD
+Total Contract Value: $5,092,500.00 USD
+Currency: USD
+
+SCHEDULE:
+Return to Service Date: August 30, 2024
+Turnaround Time: 163 calendar days
+
+AUTHORIZATIONS:
+GE Aerospace CES - Authorized Representative: Sarah M. Chen, VP - MRO Operations
+Customer - Authorized Signatory: James T. Wilson, Director of Engineering
+
+This document constitutes a binding contract between the parties named above.
+All work performed in accordance with FAA Approved Maintenance Program and applicable ADs.
